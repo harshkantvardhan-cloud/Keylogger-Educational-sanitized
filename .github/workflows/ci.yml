@@ -9,9 +9,12 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Python
+      - name: Setup Python 3.11
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
@@ -21,15 +24,5 @@ jobs:
           pip install -r requirements.txt || true
       - name: Run explicit tests (must pass)
         run: |
+          echo "Running explicit unit tests"
           python -m unittest tests.test_safe_demo tests.test_print_output -v
-        shell: bash
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt || true
-      - name: Run tests (explicit then discovery fallback)
-        run: |
-          # Try running the explicit modules first (this matches local runs)
-          python -m unittest tests.test_safe_demo tests.test_print_output -v || true
-          # If discovery finds anything else, run it as a fallback and fail CI on its result
-          python -m unittest discover -v
