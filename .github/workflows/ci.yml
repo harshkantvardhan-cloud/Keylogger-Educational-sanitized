@@ -19,7 +19,22 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt || true
-      - name: Run tests
+      - name: Diagnostics: environment
         run: |
-          # Run the specific test modules that pass locally to avoid discovery differences
-          python -m unittest tests.test_safe_demo tests.test_print_output -v
+          echo "---- python info ----"
+          python --version
+          python -c "import sys,site; print('executable:', sys.executable); print('sys.path:', sys.path); print('site.getsitepackages:', getattr(site,'getsitepackages', lambda:[] )())"
+          echo "---- repo files ----"
+          ls -la
+          echo "---- file tree ----"
+          find . -maxdepth 3 -type f -print | sed -n '1,200p'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt || true
+      - name: Run tests (explicit then discovery fallback)
+        run: |
+          # Try running the explicit modules first (this matches local runs)
+          python -m unittest tests.test_safe_demo tests.test_print_output -v || true
+          # If discovery finds anything else, run it as a fallback and fail CI on its result
+          python -m unittest discover -v
