@@ -9,6 +9,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: '.'
     steps:
       - uses: actions/checkout@v4
       - name: Setup Python
@@ -20,6 +22,16 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt || true
+      - name: Sanity: import `safe_demo`
+        run: |
+          echo "---- sanity import ----"
+          python - <<'PY'
+import safe_demo
+print('safe_demo.get_simulated_events():', safe_demo.get_simulated_events())
+print('safe_demo.print_simulated_events() output:')
+safe_demo.print_simulated_events()
+PY
+        shell: bash
       - name: Diagnostics: environment
         run: |
           echo "---- python info ----"
