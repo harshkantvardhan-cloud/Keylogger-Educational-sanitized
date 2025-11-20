@@ -41,6 +41,33 @@ PY
           ls -la
           echo "---- file tree ----"
           find . -maxdepth 3 -type f -print | sed -n '1,200p'
+      - name: Diagnostics: show project files and contents
+        run: |
+          echo "---- full file tree ----"
+          find . -type f -print | sed -n '1,500p'
+          echo "---- show safe_demo.py ----"
+          sed -n '1,200p' safe_demo.py || true
+          echo "---- show tests directory ----"
+          find tests -type f -print -exec sed -n '1,200p' {} \; || true
+      - name: Diagnostics: pip and python path
+        run: |
+          echo "---- sys.path ----"
+          python - <<'PY'
+import sys
+import json
+print(json.dumps(sys.path, indent=2))
+PY
+          echo "---- pip list ----"
+          pip --version || true
+          pip list || true
+        shell: bash
+      - name: Run full tests (fail CI if discovery fails)
+        run: |
+          echo "---- running explicit tests ----"
+          python -m unittest tests.test_safe_demo tests.test_print_output -v || true
+          echo "---- running discovery ----"
+          python -m unittest discover -v
+        shell: bash
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
